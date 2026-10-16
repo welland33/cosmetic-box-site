@@ -75,7 +75,9 @@
   - 그 전에 적용했던 "Vermillion Editorial Grid" 디자인은 Git 기록(8536726)에 남아 있다.
 - 문의 저장: 예 → Supabase(leaderpl-admin 스킬) + /admin
 - 회원가입: 이번엔 아니요
-- 배포: GitHub 공개 저장소 + Vercel
+- 배포: GitHub 공개 저장소(welland33/cosmetic-box-site) + Vercel(https://cosmetic-box-site.vercel.app)
+  - (2026-10-17) Vercel GitHub 앱 설치가 GitHub 본인 확인에서 막혀, Git 자동 배포 대신 Vercel 프로그램(CLI)으로 배포한다. Push만으로는 사이트가 바뀌지 않으니, 고친 뒤 `vercel deploy --prod`를 따로 실행한다.
+  - 문의 저장소: Supabase `cosmetic-box-db`(무료 요금제, 서울 지역), 표 `inquiries`
 
 ## 13. 만드는 순서 (클로드가 처음부터 끝까지 한 번에)
 1. 스타일(색·글꼴)을 분위기에 맞게 정하고 첫 화면부터 만든다
