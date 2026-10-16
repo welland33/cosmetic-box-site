@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>문의함 | 관리자</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --board: #ECEAEE;
+    --pearl: #F6F4F6;
+    --ink: #2A1520;
+    --ink-soft: #5E4A55;
+    --rule: #CDC6CF;
+    --wine: #4A1426;
+    --wine-deep: #36101C;
+    --err: #9B1B30;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0; background: var(--board); color: var(--ink);
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    font-size: 16px; line-height: 1.6; word-break: keep-all; overflow-wrap: anywhere;
+  }
+  :focus-visible { outline: 2px solid var(--wine); outline-offset: 2px; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { margin: 0; font-size: 1.375rem; }
+  button { font: inherit; cursor: pointer; }
+  .btn { min-height: 48px; padding: 0 20px; border: 1px solid var(--wine); border-radius: 4px; background: var(--wine); color: var(--pearl); font-weight: 600; }
+  .btn-quiet { background: transparent; color: var(--wine); }
+
+  /* 로그인 */
+  .login { max-width: 360px; margin: 18vh auto 0; }
+  .login p { margin: 6px 0 24px; color: var(--ink-soft); }
+  .login input { width: 100%; min-height: 52px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 4px; background: #fff; font: inherit; }
+  .login .btn { width: 100%; margin-top: 12px; }
+  .msg { min-height: 1.6em; margin-top: 12px; color: var(--err); }
+
+  /* 목록 */
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .bar-actions { display: flex; gap: 8px; }
+  .count { margin: 24px 0; padding: 20px; background: var(--wine); color: var(--pearl); border-radius: 4px; }
+  .count strong { display: block; font-size: 2.5rem; line-height: 1.1; }
+  .list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .card { padding: 18px; background: var(--pearl); border: 1px solid var(--rule); border-radius: 4px; }
+  .card.is-new { border-left: 4px solid var(--wine); }
+  .card-date { color: var(--ink-soft); font-size: .9375rem; }
+  .card-name { margin: 4px 0 0; font-size: 1.125rem; font-weight: 700; }
+  .card-row { margin-top: 8px; }
+  .card-row .label { color: var(--ink-soft); font-size: .875rem; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .copy { min-height: 44px; padding: 0 12px; border: 1px solid var(--rule); border-radius: 4px; background: #fff; color: var(--ink); text-align: left; }
+  .copied { margin-left: 8px; color: var(--ink-soft); font-size: .875rem; }
+  .status { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 16px; }
+  .status button { min-height: 48px; border: 1px solid var(--rule); border-radius: 4px; background: #fff; color: var(--ink); }
+  .status button[aria-pressed="true"] { border-color: var(--wine); background: var(--wine); color: var(--pearl); font-weight: 600; }
+  .empty { padding: 32px 18px; background: var(--pearl); border-radius: 4px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <form class="login" id="login" autocomplete="off">
+    <h1>문의함</h1>
+    <p>관리자 비밀번호를 입력해 주세요.</p>
+    <label for="pw" class="sr">비밀번호</label>
+    <input id="pw" type="password" autocomplete="current-password" required>
+    <button class="btn" type="submit">들어가기</button>
+    <p class="msg" id="login-msg" role="alert"></p>
+  </form>
+
+  <main id="inbox" hidden>
+    <div class="bar">
+      <h1>문의함</h1>
+      <div class="bar-actions">
+        <button class="btn btn-quiet" id="reload" type="button">새로고침</button>
+        <button class="btn btn-quiet" id="logout" type="button">나가기</button>
+      </div>
+    </div>
+    <div class="count"><strong id="new-count">0</strong>새 문의</div>
+    <p class="msg" id="list-msg" role="status"></p>
+    <ul class="list" id="list"></ul>
+  </main>
+
+</div>
+<script>
+  (function () {
+    var KEY = 'admin_pw';
+    var STATUSES = ['새 문의', '연락함', '완료'];
+    var $ = function (id) { return document.getElementById(id); };
+    var pw = '';
+    try { pw = sessionStorage.getItem(KEY) || ''; } catch (e) {}
+
+    function save(v) { try { v ? sessionStorage.setItem(KEY, v) : sessionStorage.removeItem(KEY); } catch (e) {} }
+
+    async function api(method, body) {
+      var headers = { 'x-admin-password': pw };
+      if (body) headers['Content-Type'] = 'application/json';
+      var r = await fetch('/api/admin', { method: method, headers: headers, body: body ? JSON.stringify(body) : undefined });
+      var j = await r.json().catch(function () { return {}; });
+      return { r: r, j: j };
+    }
+
+    function showLogin(text) {
+      pw = ''; save('');
+      $('inbox').hidden = true;
+      $('login').hidden = false;
+      $('login-msg').textContent = text || '';
+      $('pw').value = '';
+      $('pw').focus();
+    }
+
+    var fmt = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', weekday: 'short', hour: 'numeric', minute: '2-digit' });
+
+    function el(tag, cls, text) {
+      var n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text != null) n.textContent = text;
+      return n;
+    }
+
+    function copyContact(btn, text) {
+      var note = btn.nextElementSibling;
+      function done(t) { note.textContent = t; setTimeout(function () { note.textContent = ''; }, 1800); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { done('복사했어요'); }, select);
+      } else select();
+      function select() {
+        var range = document.createRange();
+        range.selectNodeContents(btn);
+        var sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(range);
+        done('선택했어요. 길게 눌러 복사하세요');
+      }
+    }
+
+    function render(rows) {
+      var list = $('list');
+      list.textContent = '';
+      $('new-count').textContent = rows.filter(function (x) { return x.status === '새 문의'; }).length;
+      if (!rows.length) {
+        list.appendChild(el('li', 'empty', '아직 들어온 문의가 없어요. 사이트의 문의 폼으로 들어온 문의가 여기에 쌓여요.'));
+        return;
+      }
+      rows.forEach(function (row) {
+        var li = el('li', 'card' + (row.status === '새 문의' ? ' is-new' : ''));
+        li.appendChild(el('div', 'card-date', fmt.format(new Date(row.created_at))));
+        li.appendChild(el('p', 'card-name', row.name));
+
+        var c = el('div', 'card-row');
+        c.appendChild(el('div', 'label', '연락처'));
+        var copyBtn = el('button', 'copy', row.contact);
+        copyBtn.type = 'button';
+        copyBtn.setAttribute('aria-label', '연락처 복사: ' + row.contact);
+        copyBtn.addEventListener('click', function () { copyContact(copyBtn, row.contact); });
+        c.appendChild(copyBtn);
+        c.appendChild(el('span', 'copied'));
+        li.appendChild(c);
+
+        var t = el('div', 'card-row');
+        t.appendChild(el('div', 'label', '출시 희망 시기'));
+        t.appendChild(el('div', null, row.launch_timing || '적지 않음'));
+        li.appendChild(t);
+
+        var s = el('div', 'status');
+        s.setAttribute('role', 'group');
+        s.setAttribute('aria-label', '처리 상태');
+        STATUSES.forEach(function (st) {
+          var b = el('button', null, st);
+          b.type = 'button';
+          b.setAttribute('aria-pressed', String(row.status === st));
+          b.addEventListener('click', async function () {
+            if (row.status === st) return;
+            b.disabled = true;
+            var res = await api('PATCH', { id: row.id, status: st });
+            if (res.r.status === 401) return showLogin('비밀번호가 맞지 않아요.');
+            if (!res.r.ok) { $('list-msg').textContent = res.j.error || '바꾸지 못했어요.'; b.disabled = false; return; }
+            load();
+          });
+          s.appendChild(b);
+        });
+        li.appendChild(s);
+        list.appendChild(li);
+      });
+    }
+
+    async function load() {
+      $('list-msg').textContent = '불러오는 중…';
+      var res = await api('GET');
+      if (res.r.status === 401) return showLogin('비밀번호가 맞지 않아요.');
+      if (!res.r.ok) {
+        $($('inbox').hidden ? 'login-msg' : 'list-msg').textContent = res.j.error || '불러오지 못했어요.';
+        return;
+      }
+      $('list-msg').textContent = '';
+      $('login').hidden = true;
+      $('inbox').hidden = false;
+      render(res.j.rows || []);
+    }
+
+    $('login').addEventListener('submit', function (e) {
+      e.preventDefault();
+      pw = $('pw').value;
+      if (!pw) return;
+      save(pw);
+      $('login-msg').textContent = '';
+      load().catch(function () { $('login-msg').textContent = '연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.'; });
+    });
+    $('reload').addEventListener('click', function () { load(); });
+    $('logout').addEventListener('click', function () { showLogin(''); });
+
+    if (pw) load().catch(function () { showLogin(''); }); else $('pw').focus();
+  })();
+</script>
+</body>
+</html>
