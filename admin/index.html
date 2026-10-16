@@ -5,24 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>문의함 | 관리자</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   :root {
-    --board: #F5F7FA;
+    --board: #F5F5F7;
     --pearl: #FFFFFF;
-    --ink: #000000;
-    --ink-soft: #5B6270;
-    --rule: #DDE1E6;
-    --wine: #000000;
-    --verm: #DD1D00;
-    --err: #B81800;
+    --ink: #1D1D1F;
+    --ink-soft: #6E6E73;
+    --rule: #D2D2D7;
+    --wine: #0071E3;
+    --verm: #0071E3;
+    --err: #C4161C;
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   body {
     margin: 0; background: var(--board); color: var(--ink);
-    font-family: "Inter", "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
     font-size: 16px; line-height: 1.6; word-break: keep-all; overflow-wrap: anywhere;
   }
   :focus-visible { outline: 2px solid var(--wine); outline-offset: 2px; }
@@ -42,11 +41,11 @@
   /* 목록 */
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .bar-actions { display: flex; gap: 8px; }
-  .count { margin: 24px 0; padding: 20px; background: var(--wine); color: var(--pearl); border-radius: 4px; }
+  .count { margin: 24px 0; padding: 20px; background: var(--pearl); color: var(--ink); border-radius: 0; }
   .count strong { display: block; font-size: 2.5rem; line-height: 1.1; }
   .list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
   .card { padding: 18px; background: var(--pearl); border: 1px solid var(--rule); border-radius: 4px; }
-  .card.is-new { border-left: 4px solid var(--verm); }
+  .card.is-new { border-left: 4px solid var(--ink); }
   .card-date { color: var(--ink-soft); font-size: .9375rem; }
   .card-name { margin: 4px 0 0; font-size: 1.125rem; font-weight: 700; }
   .card-row { margin-top: 8px; }
